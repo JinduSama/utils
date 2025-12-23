@@ -1,5 +1,14 @@
 """Shared test fixtures and configuration."""
 
+import os
+
+# Ensure tests run without a GUI backend (e.g. tkinter) available.
+os.environ.setdefault("MPLBACKEND", "Agg")
+
+import matplotlib
+
+matplotlib.use("Agg", force=True)
+
 import numpy as np
 import pandas as pd
 import pytest

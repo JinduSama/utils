@@ -118,9 +118,14 @@ def plot_roc_curve(
     """Plot ROC curve(s) for binary or multi-class classification.
 
     Args:
-        y_true: Ground truth binary labels or one-hot encoded for multi-class.
-        y_score: Predicted probabilities. For multi-class, provide a dict with
-            class names as keys and probabilities as values.
+                y_true: Ground truth binary labels or one-hot encoded for multi-class.
+                y_score: Predicted probabilities.
+
+                        - Binary: pass a 1D array-like of positive-class probabilities.
+                        - Binary model comparison: pass a dict mapping model names to 1D
+                            score arrays.
+                        - Multi-class: pass a dict mapping class names to score arrays, and
+                            provide `y_true` as one-hot encoded (recommended).
         title: Plot title.
         figsize: Size preset.
         colors: Custom color palette.
@@ -153,21 +158,41 @@ def plot_roc_curve(
         colors = get_colors("categorical")
 
     if isinstance(y_score, dict):
-        # Multi-class ROC curves
-        for i, (name, scores) in enumerate(y_score.items()):
-            color = colors[i % len(colors)]
+        y_true_arr = np.asarray(y_true)
+        is_one_hot = isinstance(y_true, np.ndarray) and y_true.ndim == 2
+        # Heuristic:
+        # - If y_true is one-hot or has >2 classes, treat dict as multi-class per-class scores
+        # - If y_true is binary, treat dict as multiple models (model comparison)
+        n_unique = np.unique(y_true_arr).size if not is_one_hot else y_true.shape[1]
+        is_binary = (not is_one_hot) and (n_unique <= 2)
 
-            # Get binary labels for this class
-            if isinstance(y_true, np.ndarray) and y_true.ndim == 2:
-                y_binary = y_true[:, i]
-            else:
-                y_binary = (np.asarray(y_true) == i).astype(int)
+        if is_binary:
+            # Multiple models (binary)
+            for i, (name, scores) in enumerate(y_score.items()):
+                color = colors[i % len(colors)]
+                scores_arr = np.asarray(scores)
 
-            fpr, tpr, _ = roc_curve(y_binary, scores)
-            auc = roc_auc_score(y_binary, scores)
+                fpr, tpr, _ = roc_curve(y_true_arr, scores_arr)
+                auc = roc_auc_score(y_true_arr, scores_arr)
 
-            label = f"{name} (AUC = {auc:.3f})" if show_auc else name
-            ax.plot(fpr, tpr, color=color, label=label, linewidth=2, **kwargs)
+                label = f"{name} (AUC = {auc:.3f})" if show_auc else name
+                ax.plot(fpr, tpr, color=color, label=label, linewidth=2, **kwargs)
+        else:
+            # Multi-class ROC curves (per class)
+            for i, (name, scores) in enumerate(y_score.items()):
+                color = colors[i % len(colors)]
+
+                # Get binary labels for this class
+                if is_one_hot:
+                    y_binary = y_true[:, i]
+                else:
+                    y_binary = (np.asarray(y_true) == i).astype(int)
+
+                fpr, tpr, _ = roc_curve(y_binary, scores)
+                auc = roc_auc_score(y_binary, scores)
+
+                label = f"{name} (AUC = {auc:.3f})" if show_auc else name
+                ax.plot(fpr, tpr, color=color, label=label, linewidth=2, **kwargs)
     else:
         # Binary ROC curve
         y_true = np.asarray(y_true)
@@ -233,20 +258,61 @@ def plot_precision_recall_curve(
         colors = get_colors("categorical")
 
     if isinstance(y_score, dict):
-        # Multi-class PR curves
-        for i, (name, scores) in enumerate(y_score.items()):
-            color = colors[i % len(colors)]
+        y_true_arr = np.asarray(y_true)
+        is_one_hot = isinstance(y_true, np.ndarray) and y_true.ndim == 2
+        n_unique = np.unique(y_true_arr).size if not is_one_hot else y_true.shape[1]
+        is_binary = (not is_one_hot) and (n_unique <= 2)
 
-            if isinstance(y_true, np.ndarray) and y_true.ndim == 2:
-                y_binary = y_true[:, i]
-            else:
-                y_binary = (np.asarray(y_true) == i).astype(int)
+        if is_binary:
+            # Multiple models (binary)
+            for i, (name, scores) in enumerate(y_score.items()):
+                color = colors[i % len(colors)]
+                scores_arr = np.asarray(scores)
 
-            precision, recall, _ = precision_recall_curve(y_binary, scores)
-            ap = average_precision_score(y_binary, scores)
+                precision, recall, _ = precision_recall_curve(y_true_arr, scores_arr)
+                ap = average_precision_score(y_true_arr, scores_arr)
 
-            label = f"{name} (AP = {ap:.3f})" if show_ap else name
-            ax.plot(recall, precision, color=color, label=label, linewidth=2, **kwargs)
+                label = f"{name} (AP = {ap:.3f})" if show_ap else name
+                ax.plot(
+                    recall,
+                    precision,
+                    color=color,
+                    label=label,
+                    linewidth=2,
+                    **kwargs,
+                )
+
+            if show_baseline:
+                baseline = y_true_arr.mean()
+                ax.axhline(
+                    y=baseline,
+                    color="gray",
+                    linestyle="--",
+                    alpha=0.7,
+                    label=f"Baseline ({baseline:.3f})",
+                )
+        else:
+            # Multi-class PR curves (per class)
+            for i, (name, scores) in enumerate(y_score.items()):
+                color = colors[i % len(colors)]
+
+                if is_one_hot:
+                    y_binary = y_true[:, i]
+                else:
+                    y_binary = (np.asarray(y_true) == i).astype(int)
+
+                precision, recall, _ = precision_recall_curve(y_binary, scores)
+                ap = average_precision_score(y_binary, scores)
+
+                label = f"{name} (AP = {ap:.3f})" if show_ap else name
+                ax.plot(
+                    recall,
+                    precision,
+                    color=color,
+                    label=label,
+                    linewidth=2,
+                    **kwargs,
+                )
     else:
         y_true = np.asarray(y_true)
         y_score = np.asarray(y_score)

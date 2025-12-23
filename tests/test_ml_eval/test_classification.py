@@ -67,6 +67,21 @@ class TestPlotROCCurve:
         legend = ax.get_legend()
         assert legend is not None
 
+    def test_roc_curve_dict_binary_treated_as_models(self, classification_data):
+        """Test that dict input with binary y_true is treated as multiple models."""
+        y_true, _, y_proba = classification_data
+        model_scores = {
+            "Model A": y_proba,
+            "Model B": 1 - y_proba,
+        }
+
+        fig, ax = plot_roc_curve(y_true, model_scores)
+
+        assert fig is not None
+        assert ax is not None
+        # Two model curves + diagonal reference
+        assert len(ax.lines) >= 3
+
 
 class TestPlotPrecisionRecallCurve:
     """Tests for plot_precision_recall_curve function."""
@@ -85,6 +100,21 @@ class TestPlotPrecisionRecallCurve:
         fig, ax = plot_precision_recall_curve(y_true, y_proba, show_baseline=True)
 
         assert len(ax.lines) >= 2
+
+    def test_pr_curve_dict_binary_treated_as_models(self, classification_data):
+        """Test that dict input with binary y_true is treated as multiple models."""
+        y_true, _, y_proba = classification_data
+        model_scores = {
+            "Model A": y_proba,
+            "Model B": 1 - y_proba,
+        }
+
+        fig, ax = plot_precision_recall_curve(y_true, model_scores, show_baseline=True)
+
+        assert fig is not None
+        assert ax is not None
+        # Two model curves + baseline line
+        assert len(ax.lines) >= 3
 
 
 class TestPlotCalibrationCurve:

@@ -17,43 +17,57 @@ logger = get_logger("cleaning.extensions")
 
 
 def clean_german_numbers(
-    df: pd.DataFrame,
-    columns: str | list[str],
+    data: pd.DataFrame | pd.Series,
+    columns: str | list[str] | None = None,
     thousands_sep: str | None = None,
     decimal_sep: str | None = None,
     errors: str = "coerce",
-) -> pd.DataFrame:
+) -> pd.DataFrame | pd.Series:
     """Convert German-formatted numbers to standard floats.
 
     German number format uses comma as decimal separator and period as thousands separator.
     Example: "1.234,56" -> 1234.56
 
     Args:
-        df: DataFrame to clean.
-        columns: Column name(s) to convert.
+        data: DataFrame or Series to clean.
+        columns: Column name(s) to convert (only if data is a DataFrame).
         thousands_sep: Thousands separator to replace. If None, uses configured default.
         decimal_sep: Decimal separator to replace. If None, uses configured default.
         errors: How to handle conversion errors ('coerce', 'raise', 'ignore').
 
     Returns:
-        DataFrame with converted columns.
+        DataFrame or Series with converted values.
 
     Example:
         >>> df = pd.DataFrame({'price': ['1.234,56', '789,12']})
         >>> df = clean_german_numbers(df, 'price')
-        >>> print(df['price'])
-        0    1234.56
-        1     789.12
+        >>> s = pd.Series(['1.234,56', '789,12'])
+        >>> s_clean = clean_german_numbers(s)
     """
-    df = df.copy()
-
-    if isinstance(columns, str):
-        columns = [columns]
-
     if thousands_sep is None:
         thousands_sep = get_thousands_separator()
     if decimal_sep is None:
         decimal_sep = get_decimal_separator()
+
+    if isinstance(data, pd.Series):
+        # Convert to string for processing
+        s = data.astype(str)
+        # Remove thousands separator
+        s = s.str.replace(thousands_sep, "", regex=False)
+        # Replace decimal separator with period
+        s = s.str.replace(decimal_sep, ".", regex=False)
+        # Convert to numeric
+        return pd.to_numeric(s, errors=errors)
+
+    # Handle DataFrame
+    df = data.copy()
+
+    if columns is None:
+        logger.warning("No columns specified for clean_german_numbers on DataFrame")
+        return df
+
+    if isinstance(columns, str):
+        columns = [columns]
 
     for col in columns:
         if col not in df.columns:
@@ -76,27 +90,37 @@ def clean_german_numbers(
 
 
 def parse_german_dates(
-    df: pd.DataFrame,
-    columns: str | list[str],
+    data: pd.DataFrame | pd.Series,
+    columns: str | list[str] | None = None,
     date_format: str = "%d.%m.%Y",
     errors: str = "coerce",
-) -> pd.DataFrame:
+) -> pd.DataFrame | pd.Series:
     """Parse German-formatted dates.
 
     Args:
-        df: DataFrame to clean.
-        columns: Column name(s) to convert.
+        data: DataFrame or Series to clean.
+        columns: Column name(s) to convert (only if data is a DataFrame).
         date_format: Expected date format (default: DD.MM.YYYY).
         errors: How to handle conversion errors.
 
     Returns:
-        DataFrame with parsed date columns.
+        DataFrame or Series with parsed date values.
 
     Example:
         >>> df = pd.DataFrame({'date': ['25.12.2024', '01.01.2025']})
         >>> df = parse_german_dates(df, 'date')
+        >>> s = pd.Series(['25.12.2024', '01.01.2025'])
+        >>> s_clean = parse_german_dates(s)
     """
-    df = df.copy()
+    if isinstance(data, pd.Series):
+        return pd.to_datetime(data, format=date_format, errors=errors)
+
+    # Handle DataFrame
+    df = data.copy()
+
+    if columns is None:
+        logger.warning("No columns specified for parse_german_dates on DataFrame")
+        return df
 
     if isinstance(columns, str):
         columns = [columns]
@@ -169,41 +193,35 @@ def clean_column_names(
 
 
 def detect_outliers(
-    df: pd.DataFrame,
+    data: pd.DataFrame | pd.Series,
     columns: str | list[str] | None = None,
     method: str = "iqr",
     threshold: float = 1.5,
-) -> pd.DataFrame:
+) -> pd.DataFrame | pd.Series:
     """Detect outliers in numeric columns.
 
     Args:
-        df: DataFrame to analyze.
-        columns: Column name(s) to check. If None, checks all numeric columns.
+        data: DataFrame or Series to analyze.
+        columns: Column name(s) to check (only if data is a DataFrame).
+            If None, checks all numeric columns.
         method: Detection method ('iqr', 'zscore', 'modified_zscore').
         threshold: Threshold for outlier detection.
             For IQR: multiplier (default 1.5)
             For Z-score: number of standard deviations (default 3)
 
     Returns:
-        DataFrame with boolean columns indicating outliers.
+        DataFrame or Series with boolean values indicating outliers.
 
     Example:
         >>> df = pd.DataFrame({'values': [1, 2, 3, 100, 4, 5]})
         >>> outliers = detect_outliers(df, 'values')
-        >>> print(outliers['values_outlier'])
+        >>> s = pd.Series([1, 2, 3, 100, 4, 5])
+        >>> s_outliers = detect_outliers(s)
     """
-    if columns is None:
-        columns = df.select_dtypes(include=[np.number]).columns.tolist()
-    elif isinstance(columns, str):
-        columns = [columns]
-
-    result = pd.DataFrame(index=df.index)
-
-    for col in columns:
-        if col not in df.columns:
-            continue
-
-        values = df[col].dropna()
+    def _get_outlier_mask(s: pd.Series) -> pd.Series:
+        values = s.dropna()
+        if values.empty:
+            return pd.Series(False, index=s.index)
 
         if method == "iqr":
             q1 = values.quantile(0.25)
@@ -211,46 +229,75 @@ def detect_outliers(
             iqr = q3 - q1
             lower = q1 - threshold * iqr
             upper = q3 + threshold * iqr
-            result[f"{col}_outlier"] = (df[col] < lower) | (df[col] > upper)
+            return (s < lower) | (s > upper)
 
         elif method == "zscore":
-            z_scores = np.abs((df[col] - values.mean()) / values.std())
-            result[f"{col}_outlier"] = z_scores > threshold
+            z_scores = np.abs((s - values.mean()) / values.std())
+            return z_scores > threshold
 
         elif method == "modified_zscore":
             median = values.median()
             mad = np.median(np.abs(values - median))
-            modified_z = 0.6745 * (df[col] - median) / mad
-            result[f"{col}_outlier"] = np.abs(modified_z) > threshold
+            if mad == 0:
+                return pd.Series(False, index=s.index)
+            modified_z = 0.6745 * (s - median) / mad
+            return np.abs(modified_z) > threshold
+        
+        return pd.Series(False, index=s.index)
+
+    if isinstance(data, pd.Series):
+        return _get_outlier_mask(data)
+
+    # Handle DataFrame
+    df = data
+    if columns is None:
+        columns = df.select_dtypes(include=[np.number]).columns.tolist()
+    elif isinstance(columns, str):
+        columns = [columns]
+
+    result = pd.DataFrame(index=df.index)
+    for col in columns:
+        if col not in df.columns:
+            continue
+        result[f"{col}_outlier"] = _get_outlier_mask(df[col])
 
     return result
 
 
 def remove_outliers(
-    df: pd.DataFrame,
+    data: pd.DataFrame | pd.Series,
     columns: str | list[str] | None = None,
     method: str = "iqr",
     threshold: float = 1.5,
-) -> pd.DataFrame:
+) -> pd.DataFrame | pd.Series:
     """Remove rows with outliers.
 
     Args:
-        df: DataFrame to clean.
-        columns: Column name(s) to check. If None, checks all numeric columns.
+        data: DataFrame or Series to clean.
+        columns: Column name(s) to check (only if data is a DataFrame).
         method: Detection method ('iqr', 'zscore', 'modified_zscore').
         threshold: Threshold for outlier detection.
 
     Returns:
-        DataFrame with outlier rows removed.
+        DataFrame or Series with outlier rows removed.
     """
-    outliers = detect_outliers(df, columns, method, threshold)
+    outliers = detect_outliers(data, columns, method, threshold)
+    
+    if isinstance(data, pd.Series):
+        mask = ~outliers
+        removed_count = (~mask).sum()
+        if removed_count > 0:
+            logger.info(f"Removed {removed_count} outliers from Series")
+        return data[mask].copy()
+
+    # Handle DataFrame
     mask = ~outliers.any(axis=1)
     removed_count = (~mask).sum()
 
     if removed_count > 0:
         logger.info(f"Removed {removed_count} rows with outliers")
 
-    return df[mask].copy()
+    return data[mask].copy()
 
 
 def missing_value_report(df: pd.DataFrame) -> pd.DataFrame:
@@ -288,6 +335,8 @@ def fill_missing_values(
     df: pd.DataFrame,
     strategy: str | dict[str, str] = "mean",
     fill_value: Any = None,
+    strategies: dict[str, str] | None = None,
+    fill_values: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """Fill missing values with specified strategy.
 
@@ -297,17 +346,29 @@ def fill_missing_values(
             - String: 'mean', 'median', 'mode', 'ffill', 'bfill', 'constant'
             - Dict: {column: strategy} for column-specific strategies
         fill_value: Value to use when strategy is 'constant'.
+        strategies: Alias for strategy (for compatibility).
+        fill_values: Dictionary of column-specific fill values for 'constant' strategy.
 
     Returns:
         DataFrame with filled missing values.
     """
     df = df.copy()
+    
+    # Use strategies if provided
+    if strategies is not None:
+        strategy = strategies
 
     if isinstance(strategy, dict):
         for col, strat in strategy.items():
             if col not in df.columns:
                 continue
-            df[col] = _fill_column(df[col], strat, fill_value)
+            
+            # Get specific fill value for this column if available
+            col_fill_value = fill_value
+            if fill_values and col in fill_values:
+                col_fill_value = fill_values[col]
+            
+            df[col] = _fill_column(df[col], strat, col_fill_value)
     else:
         for col in df.columns:
             df[col] = _fill_column(df[col], strategy, fill_value)
@@ -397,25 +458,58 @@ def drop_duplicate_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def normalize_text(
-    df: pd.DataFrame,
-    columns: str | list[str],
+    data: pd.DataFrame | pd.Series,
+    columns: str | list[str] | None = None,
+    case: str | None = None,
     lowercase: bool = True,
     strip: bool = True,
     remove_extra_spaces: bool = True,
-) -> pd.DataFrame:
+) -> pd.DataFrame | pd.Series:
     """Normalize text in string columns.
 
     Args:
-        df: DataFrame to clean.
-        columns: Column name(s) to normalize.
-        lowercase: Whether to convert to lowercase.
-        strip: Whether to strip leading/trailing whitespace.
-        remove_extra_spaces: Whether to replace multiple spaces with single space.
+        data: DataFrame or Series to clean.
+        columns: Column name(s) to normalize (only if data is a DataFrame).
+        case: Target case ('lower', 'upper', 'title', 'snake'). If provided, overrides lowercase.
+        lowercase: Whether to convert to lowercase (default: True).
+        strip: Whether to strip leading/trailing whitespace (default: True).
+        remove_extra_spaces: Whether to replace multiple spaces with single space (default: True).
 
     Returns:
-        DataFrame with normalized text columns.
+        DataFrame or Series with normalized text.
     """
-    df = df.copy()
+    def _normalize_series(s: pd.Series) -> pd.Series:
+        if s.dtype != "object" and not pd.api.types.is_string_dtype(s):
+            return s
+
+        # Apply case transformation
+        if case == "lower":
+            s = s.str.lower()
+        elif case == "upper":
+            s = s.str.upper()
+        elif case == "title":
+            s = s.str.title()
+        elif case == "snake":
+            s = s.str.replace(r"([a-z])([A-Z])", r"\1_\2", regex=True).str.lower().str.replace(r"\s+", "_", regex=True)
+        elif lowercase:
+            s = s.str.lower()
+
+        if strip:
+            s = s.str.strip()
+        if remove_extra_spaces:
+            s = s.str.replace(r"\s+", " ", regex=True)
+        
+        return s
+
+    if isinstance(data, pd.Series):
+        return _normalize_series(data)
+
+    # Handle DataFrame
+    df = data.copy()
+
+    if columns is None:
+        logger.warning("No columns specified for normalize_text on DataFrame")
+        return df
 
     if isinstance(columns, str):
         columns = [columns]
@@ -423,16 +517,7 @@ def normalize_text(
     for col in columns:
         if col not in df.columns:
             continue
-
-        if df[col].dtype != "object" and not pd.api.types.is_string_dtype(df[col]):
-            continue
-
-        if lowercase:
-            df[col] = df[col].str.lower()
-        if strip:
-            df[col] = df[col].str.strip()
-        if remove_extra_spaces:
-            df[col] = df[col].str.replace(r"\s+", " ", regex=True)
+        df[col] = _normalize_series(df[col])
 
     return df
 
