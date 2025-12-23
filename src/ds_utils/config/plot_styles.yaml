@@ -1,0 +1,115 @@
+# Color Palettes
+colors:
+  # Primary corporate colors
+  primary:
+    main: "#1f77b4"
+    light: "#6baed6"
+    dark: "#08519c"
+
+  # Secondary corporate colors
+  secondary:
+    main: "#ff7f0e"
+    light: "#fdae6b"
+    dark: "#e6550d"
+
+  # Categorical palette for multi-class/multi-series data
+  categorical:
+    - "#1f77b4"  # Blue
+    - "#ff7f0e"  # Orange
+    - "#2ca02c"  # Green
+    - "#d62728"  # Red
+    - "#9467bd"  # Purple
+    - "#8c564b"  # Brown
+    - "#e377c2"  # Pink
+    - "#7f7f7f"  # Gray
+    - "#bcbd22"  # Olive
+    - "#17becf"  # Cyan
+
+  # Sequential palette for continuous data
+  sequential:
+    - "#f7fbff"
+    - "#deebf7"
+    - "#c6dbef"
+    - "#9ecae1"
+    - "#6baed6"
+    - "#4292c6"
+    - "#2171b5"
+    - "#08519c"
+    - "#08306b"
+
+  # Diverging palette for data with a meaningful center
+  diverging:
+    negative: "#d62728"
+    neutral: "#f7f7f7"
+    positive: "#2ca02c"
+
+  # Semantic colors
+  semantic:
+    success: "#2ca02c"
+    warning: "#ff7f0e"
+    error: "#d62728"
+    info: "#1f77b4"
+
+# Typography
+fonts:
+  family: "DejaVu Sans"  # Good support for German characters
+  title_size: 14
+  label_size: 12
+  tick_size: 10
+  legend_size: 10
+
+# Figure Sizes (width, height in inches)
+figure_sizes:
+  small:
+    width: 6
+    height: 4
+  medium:
+    width: 8
+    height: 6
+  large:
+    width: 12
+    height: 8
+  presentation:
+    width: 16
+    height: 9
+  square:
+    width: 8
+    height: 8
+
+# Grid Styles
+grid:
+  show: true
+  style: "--"
+  alpha: 0.3
+  color: "#cccccc"
+
+# Spine Styles
+spines:
+  top: false
+  right: false
+  left: true
+  bottom: true
+
+# Logo Configuration
+logo:
+  path: "assets/corporate_logo.png"
+  position: "bottom-right"  # Options: top-left, top-right, bottom-left, bottom-right
+  size: 0.1  # Relative size (0.1 = 10% of figure width)
+  alpha: 0.7  # Transparency
+  padding: 10  # Padding from edges in pixels
+
+# Save Settings
+save:
+  dpi: 150
+  format: "png"
+  transparent: false
+  bbox_inches: "tight"
+  pad_inches: 0.1
+
+# Default Locale
+locale:
+  name: "de_DE.UTF-8"
+  decimal_separator: ","
+  thousands_separator: "."
+  date_format: "%d.%m.%Y"
+  datetime_format: "%d.%m.%Y %H:%M"

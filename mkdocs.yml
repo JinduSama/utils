@@ -1,0 +1,103 @@
+site_name: DS Utils
+site_description: A comprehensive Data Science utilities library for Python
+site_author: Your Name
+site_url: https://your-org.github.io/ds-utils/
+
+repo_name: your-org/ds-utils
+repo_url: https://github.com/your-org/ds-utils
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            docstring_style: numpy
+            docstring_section_style: spacy
+            merge_init_into_class: true
+            show_signature_annotations: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: quickstart.md
+  - User Guide:
+    - Plotting: plotting.md
+    - ML Evaluation: ml_evaluation.md
+    - Data Cleaning: cleaning.md
+    - Configuration: configuration.md
+  - API Reference:
+    - Plotting Module: api/plotting.md
+    - ML Evaluation Module: api/ml_eval.md
+    - Cleaning Module: api/cleaning.md
+    - Config Module: api/config.md
+  - Examples:
+    - Plotting Examples: examples/plotting.md
+    - ML Evaluation Examples: examples/ml_eval.md
+    - Cleaning Examples: examples/cleaning.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/your-org/ds-utils
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/ds-utils/
+
+copyright: Copyright &copy; 2024 Your Organization

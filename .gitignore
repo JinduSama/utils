@@ -1,0 +1,65 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+uv.lock
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Distribution artifacts
+dist/
+build/
+*.egg-info/
+*.egg
+site/
+.eggs/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data files (exclude from version control)
+*.csv
+*.parquet
+*.xlsx
+*.xls
+data/
+!examples/data/
+
+# Logs
+*.log
+logs/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Documentation build
+site/
+docs/_build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local

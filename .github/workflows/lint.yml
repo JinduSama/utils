@@ -1,0 +1,42 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: |
+          uv pip install -e ".[dev]" --system
+
+      - name: Run Ruff linter
+        run: |
+          ruff check src/ tests/
+
+      - name: Run Ruff formatter check
+        run: |
+          ruff format --check src/ tests/
+
+      - name: Run Black formatter check
+        run: |
+          black --check src/ tests/
+
+      - name: Run mypy type checker
+        run: |
+          mypy src/ --ignore-missing-imports
