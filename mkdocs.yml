@@ -50,6 +50,8 @@ plugins:
             docstring_section_style: spacy
             merge_init_into_class: true
             show_signature_annotations: true
+  - jupyter:
+      execute: true
 
 markdown_extensions:
   - pymdownx.highlight:
