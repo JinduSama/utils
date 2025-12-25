@@ -107,7 +107,7 @@ See the [Configuration Guide](docs/configuration.md) for details.
 
 ## Documentation
 
-Full documentation is available at [https://your-org.github.io/ds-utils](https://your-org.github.io/ds-utils)
+Full documentation is available at [https://JinduSama.github.io/utils](https://JinduSama.github.io/utils)
 
 ## Development
 
