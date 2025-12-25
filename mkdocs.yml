@@ -89,9 +89,9 @@ nav:
     - Cleaning Module: api/cleaning.md
     - Config Module: api/config.md
   - Examples:
-    - Plotting Examples: examples/plotting.md
-    - ML Evaluation Examples: examples/ml_eval.md
-    - Cleaning Examples: examples/cleaning.md
+    - Plotting Examples: examples/plotting.ipynb
+    - ML Evaluation Examples: examples/ml_eval.ipynb
+    - Cleaning Examples: examples/cleaning.ipynb
   - Contributing: contributing.md
   - Changelog: changelog.md
 
