@@ -4,15 +4,15 @@ This module provides functions for managing color palettes, creating figures
 with consistent styling, and temporary style contexts.
 """
 
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any, Generator, Literal
+from typing import Any, Literal
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.figure import Figure
 
-from ds_utils.config import get_colors, get_config, get_figure_size, get_font_config
-
+from ds_utils.config import get_colors, get_figure_size, get_font_config
 from ds_utils.config.logging_config import get_logger
 
 logger = get_logger("plotting.styles")

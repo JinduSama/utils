@@ -27,7 +27,8 @@ def setup_logging(
 
     Args:
         level: Logging level. Can be int (e.g., logging.INFO) or string (e.g., 'INFO').
-        log_file: Optional path to a log file. If provided, logs will also be written to file.
+        log_file: Optional path to a log file. If provided, logs will also be written
+            to file.
         log_format: Log message format string.
         date_format: Date format string for log timestamps.
         console_output: Whether to output logs to console.

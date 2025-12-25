@@ -1,6 +1,5 @@
 """Tests for data cleaning extensions."""
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -80,7 +79,7 @@ class TestDetectOutliers:
         result = detect_outliers(dataframe_with_outliers, method="iqr")
 
         assert "with_outlier_outlier" in result.columns
-        assert result["with_outlier_outlier"].iloc[-1] == True  # 100 is an outlier
+        assert result["with_outlier_outlier"].iloc[-1]  # 100 is an outlier
 
     def test_zscore_method(self, dataframe_with_outliers):
         """Test outlier detection with Z-score method."""

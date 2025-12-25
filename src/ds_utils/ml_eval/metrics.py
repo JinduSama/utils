@@ -14,8 +14,8 @@ from sklearn.metrics import (
     mean_absolute_percentage_error,
     mean_squared_error,
     precision_score,
-    recall_score,
     r2_score,
+    recall_score,
 )
 
 from ds_utils.config.logging_config import get_logger

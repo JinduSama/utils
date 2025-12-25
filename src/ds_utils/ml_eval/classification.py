@@ -22,9 +22,8 @@ from sklearn.metrics import (
 )
 
 from ds_utils.config import get_colors
-from ds_utils.plotting.core import apply_corporate_style, create_figure
-
 from ds_utils.config.logging_config import get_logger
+from ds_utils.plotting.core import apply_corporate_style, create_figure
 
 logger = get_logger("ml_eval.classification")
 
@@ -118,17 +117,20 @@ def plot_roc_curve(
     """Plot ROC curve(s) for binary or multi-class classification.
 
     Args:
-                y_true: Ground truth binary labels or one-hot encoded for multi-class.
-                y_score: Predicted probabilities.
-
-                        - Binary: pass a 1D array-like of positive-class probabilities.
-                        - Binary model comparison: pass a dict mapping model names to 1D
-                            score arrays.
-                        - Multi-class: pass a dict mapping class names to score arrays, and
-                            provide `y_true` as one-hot encoded (recommended).
+        y_true: Ground truth binary labels or one-hot encoded for multi-class.
+        y_score: Predicted probabilities.
+            - Binary: pass a 1D array-like of positive-class probabilities.
+            - Binary model comparison: pass a dict mapping model names to 1D score
+                arrays.
+            - Multi-class: pass a dict mapping class names to score arrays, and
+                provide `y_true` as one-hot encoded (recommended).
         title: Plot title.
         figsize: Size preset.
         colors: Custom color palette.
+        show_auc: Whether to show AUC score in legend.
+        show_diagonal: Whether to show diagonal random guess line.
+        ax: Matplotlib axes to plot on.
+        **kwargs: Additional keyword arguments passed to plot function.
         show_auc: Whether to show AUC in legend.
         show_diagonal: Whether to show diagonal reference line.
         ax: Existing axes to plot on.
@@ -161,7 +163,8 @@ def plot_roc_curve(
         y_true_arr = np.asarray(y_true)
         is_one_hot = isinstance(y_true, np.ndarray) and y_true.ndim == 2
         # Heuristic:
-        # - If y_true is one-hot or has >2 classes, treat dict as multi-class per-class scores
+        # - If y_true is one-hot or has >2 classes, treat dict as multi-class per-class
+        #   scores
         # - If y_true is binary, treat dict as multiple models (model comparison)
         n_unique = np.unique(y_true_arr).size if not is_one_hot else y_true.shape[1]
         is_binary = (not is_one_hot) and (n_unique <= 2)
@@ -326,8 +329,13 @@ def plot_precision_recall_curve(
         # Baseline
         if show_baseline:
             baseline = y_true.mean()
-            ax.axhline(y=baseline, color="gray", linestyle="--", alpha=0.7,
-                      label=f"Baseline ({baseline:.3f})")
+            ax.axhline(
+                y=baseline,
+                color="gray",
+                linestyle="--",
+                alpha=0.7,
+                label=f"Baseline ({baseline:.3f})",
+            )
 
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1.05])
@@ -385,8 +393,15 @@ def plot_calibration_curve(
             prob_true, prob_pred = calibration_curve(
                 y_true, proba, n_bins=n_bins, strategy=strategy
             )
-            ax.plot(prob_pred, prob_true, color=color, label=name,
-                    marker="o", linewidth=2, **kwargs)
+            ax.plot(
+                prob_pred,
+                prob_true,
+                color=color,
+                label=name,
+                marker="o",
+                linewidth=2,
+                **kwargs,
+            )
     else:
         y_true = np.asarray(y_true)
         y_proba = np.asarray(y_proba)
@@ -394,12 +409,25 @@ def plot_calibration_curve(
         prob_true, prob_pred = calibration_curve(
             y_true, y_proba, n_bins=n_bins, strategy=strategy
         )
-        ax.plot(prob_pred, prob_true, color=colors[0], label="Model",
-                marker="o", linewidth=2, **kwargs)
+        ax.plot(
+            prob_pred,
+            prob_true,
+            color=colors[0],
+            label="Model",
+            marker="o",
+            linewidth=2,
+            **kwargs,
+        )
 
     # Perfect calibration line
-    ax.plot([0, 1], [0, 1], color="gray", linestyle="--", alpha=0.7,
-            label="Perfectly Calibrated")
+    ax.plot(
+        [0, 1],
+        [0, 1],
+        color="gray",
+        linestyle="--",
+        alpha=0.7,
+        label="Perfectly Calibrated",
+    )
 
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1])
@@ -446,7 +474,9 @@ def plot_classification_report(
         fig = ax.figure
 
     # Get classification report as dict
-    report = classification_report(y_true, y_pred, target_names=labels, output_dict=True)
+    report = classification_report(
+        y_true, y_pred, target_names=labels, output_dict=True
+    )
 
     # Convert to DataFrame (exclude averages for cleaner view)
     classes = labels if labels else list(set(y_true) | set(y_pred))
@@ -462,8 +492,16 @@ def plot_classification_report(
     df = pd.DataFrame(data, index=classes, columns=metrics)
 
     # Plot heatmap
-    sns.heatmap(df, annot=True, fmt=".2f", cmap=cmap, ax=ax,
-                vmin=0, vmax=1, cbar_kws={"label": "Score"})
+    sns.heatmap(
+        df,
+        annot=True,
+        fmt=".2f",
+        cmap=cmap,
+        ax=ax,
+        vmin=0,
+        vmax=1,
+        cbar_kws={"label": "Score"},
+    )
 
     ax.set_title(title)
     ax.set_ylabel("Class")

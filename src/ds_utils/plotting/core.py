@@ -6,12 +6,12 @@ locale setup, corporate branding, and save utilities.
 
 import locale
 import warnings
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
@@ -128,10 +128,22 @@ def add_corporate_logo(
 
     # Calculate position
     positions = {
-        "top-left": (padding / fig_width_px, 1 - padding / (fig.get_figheight() * fig.dpi)),
-        "top-right": (1 - padding / fig_width_px, 1 - padding / (fig.get_figheight() * fig.dpi)),
-        "bottom-left": (padding / fig_width_px, padding / (fig.get_figheight() * fig.dpi)),
-        "bottom-right": (1 - padding / fig_width_px, padding / (fig.get_figheight() * fig.dpi)),
+        "top-left": (
+            padding / fig_width_px,
+            1 - padding / (fig.get_figheight() * fig.dpi),
+        ),
+        "top-right": (
+            1 - padding / fig_width_px,
+            1 - padding / (fig.get_figheight() * fig.dpi),
+        ),
+        "bottom-left": (
+            padding / fig_width_px,
+            padding / (fig.get_figheight() * fig.dpi),
+        ),
+        "bottom-right": (
+            1 - padding / fig_width_px,
+            padding / (fig.get_figheight() * fig.dpi),
+        ),
     }
 
     if position not in positions:
@@ -231,7 +243,8 @@ def save_plot(
         fig: Figure to save.
         filepath: Output file path.
         dpi: Resolution in dots per inch. If None, uses configured default.
-        file_format: Output format (e.g., 'png', 'pdf'). If None, inferred from filepath.
+        file_format: Output format (e.g., 'png', 'pdf'). If None, inferred from
+            filepath.
         transparent: Whether background should be transparent. If None, uses default.
         add_logo: Whether to add corporate logo before saving.
         **kwargs: Additional arguments passed to fig.savefig().

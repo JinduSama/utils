@@ -3,14 +3,12 @@
 This module provides helpers for data validation using pandera schemas.
 """
 
-from typing import Any, Callable, Type
+from typing import Any
 
-import numpy as np
 import pandas as pd
 
 try:
-    import pandera as pa
-    from pandera import Column, Check, DataFrameSchema
+    from pandera import Check, Column, DataFrameSchema
     from pandera.errors import SchemaError
 
     PANDERA_AVAILABLE = True
@@ -46,7 +44,9 @@ def validate_dataframe(
         >>> validated_df = validate_dataframe(df, schema)
     """
     if not PANDERA_AVAILABLE:
-        raise ImportError("pandera is required for validation. Install with: pip install pandera")
+        raise ImportError(
+            "pandera is required for validation. Install with: pip install pandera"
+        )
 
     if callable(schema) and not isinstance(schema, DataFrameSchema):
         schema = schema()
@@ -84,7 +84,9 @@ def create_schema(
         ... })
     """
     if not PANDERA_AVAILABLE:
-        raise ImportError("pandera is required for validation. Install with: pip install pandera")
+        raise ImportError(
+            "pandera is required for validation. Install with: pip install pandera"
+        )
 
     dtype_map = {
         "int": int,
@@ -155,7 +157,9 @@ def create_numeric_schema(
         >>> schema = create_numeric_schema('age', min_value=0, max_value=120)
     """
     if not PANDERA_AVAILABLE:
-        raise ImportError("pandera is required for validation. Install with: pip install pandera")
+        raise ImportError(
+            "pandera is required for validation. Install with: pip install pandera"
+        )
 
     checks = []
     if min_value is not None:
@@ -165,9 +169,9 @@ def create_numeric_schema(
 
     col_dtype = int if dtype == "int" else float
 
-    return DataFrameSchema({
-        column: Column(col_dtype, checks=checks, nullable=nullable, coerce=True)
-    })
+    return DataFrameSchema(
+        {column: Column(col_dtype, checks=checks, nullable=nullable, coerce=True)}
+    )
 
 
 def create_string_schema(
@@ -178,7 +182,7 @@ def create_string_schema(
     nullable: bool = False,
     allowed_values: list[str] | None = None,
 ) -> Any:
-    """Create a schema for a string column with pattern validation.
+    r"""Create a schema for a string column with pattern validation.
 
     Args:
         column: Column name.
@@ -196,10 +200,14 @@ def create_string_schema(
         >>> schema = create_string_schema('email', pattern=r'^[\w\.-]+@[\w\.-]+\.\w+$')
 
         >>> # Categorical
-        >>> schema = create_string_schema('status', allowed_values=['active', 'inactive'])
+        >>> schema = create_string_schema(
+        ...     'status', allowed_values=['active', 'inactive']
+        ... )
     """
     if not PANDERA_AVAILABLE:
-        raise ImportError("pandera is required for validation. Install with: pip install pandera")
+        raise ImportError(
+            "pandera is required for validation. Install with: pip install pandera"
+        )
 
     checks = []
 
@@ -215,9 +223,9 @@ def create_string_schema(
     if allowed_values is not None:
         checks.append(Check.isin(allowed_values))
 
-    return DataFrameSchema({
-        column: Column(str, checks=checks, nullable=nullable, coerce=True)
-    })
+    return DataFrameSchema(
+        {column: Column(str, checks=checks, nullable=nullable, coerce=True)}
+    )
 
 
 def create_datetime_schema(
@@ -241,7 +249,9 @@ def create_datetime_schema(
         >>> schema = create_datetime_schema('created_at', min_date='2020-01-01')
     """
     if not PANDERA_AVAILABLE:
-        raise ImportError("pandera is required for validation. Install with: pip install pandera")
+        raise ImportError(
+            "pandera is required for validation. Install with: pip install pandera"
+        )
 
     checks = []
 
@@ -253,9 +263,13 @@ def create_datetime_schema(
         max_ts = pd.Timestamp(max_date)
         checks.append(Check(lambda x: x <= max_ts, element_wise=True))
 
-    return DataFrameSchema({
-        column: Column("datetime64[ns]", checks=checks, nullable=nullable, coerce=True)
-    })
+    return DataFrameSchema(
+        {
+            column: Column(
+                "datetime64[ns]", checks=checks, nullable=nullable, coerce=True
+            )
+        }
+    )
 
 
 # Common validation patterns
@@ -301,7 +315,9 @@ def create_german_postal_code_schema(column: str, nullable: bool = False) -> Any
     Returns:
         Pandera DataFrameSchema.
     """
-    return create_string_schema(column, pattern=POSTAL_CODE_PATTERN_DE, nullable=nullable)
+    return create_string_schema(
+        column, pattern=POSTAL_CODE_PATTERN_DE, nullable=nullable
+    )
 
 
 def generate_validation_report(
@@ -322,7 +338,9 @@ def generate_validation_report(
         >>> print(report[report['valid'] == False])
     """
     if not PANDERA_AVAILABLE:
-        raise ImportError("pandera is required for validation. Install with: pip install pandera")
+        raise ImportError(
+            "pandera is required for validation. Install with: pip install pandera"
+        )
 
     errors = []
 
@@ -330,12 +348,18 @@ def generate_validation_report(
         schema.validate(df, lazy=True)
     except SchemaError as e:
         for failure in e.failure_cases.itertuples():
-            errors.append({
-                "column": failure.column if hasattr(failure, "column") else None,
-                "index": failure.index if hasattr(failure, "index") else None,
-                "check": failure.check if hasattr(failure, "check") else None,
-                "failure_case": failure.failure_case if hasattr(failure, "failure_case") else None,
-            })
+            errors.append(
+                {
+                    "column": failure.column if hasattr(failure, "column") else None,
+                    "index": failure.index if hasattr(failure, "index") else None,
+                    "check": failure.check if hasattr(failure, "check") else None,
+                    "failure_case": (
+                        failure.failure_case
+                        if hasattr(failure, "failure_case")
+                        else None
+                    ),
+                }
+            )
 
     if errors:
         return pd.DataFrame(errors)

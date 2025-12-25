@@ -1,7 +1,6 @@
 """Tests for classification visualization."""
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pytest
 
 from ds_utils.ml_eval.classification import (
@@ -40,9 +39,7 @@ class TestPlotConfusionMatrix:
     def test_confusion_matrix_with_labels(self, classification_data):
         """Test confusion matrix with custom labels."""
         y_true, y_pred, _ = classification_data
-        fig, ax = plot_confusion_matrix(
-            y_true, y_pred, labels=["Negative", "Positive"]
-        )
+        fig, ax = plot_confusion_matrix(y_true, y_pred, labels=["Negative", "Positive"])
 
         assert fig is not None
 

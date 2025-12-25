@@ -13,9 +13,8 @@ from matplotlib.figure import Figure
 from scipy import stats
 
 from ds_utils.config import get_colors
-from ds_utils.plotting.core import apply_corporate_style, create_figure
-
 from ds_utils.config.logging_config import get_logger
+from ds_utils.plotting.core import apply_corporate_style, create_figure
 
 logger = get_logger("ml_eval.regression")
 
@@ -75,9 +74,15 @@ def plot_residuals(
     if show_loess:
         try:
             from statsmodels.nonparametric.smoothers_lowess import lowess
+
             smoothed = lowess(residuals, y_pred, frac=0.3)
-            ax.plot(smoothed[:, 0], smoothed[:, 1], color=colors[1],
-                    linewidth=2, label="LOESS")
+            ax.plot(
+                smoothed[:, 0],
+                smoothed[:, 1],
+                color=colors[1],
+                linewidth=2,
+                label="LOESS",
+            )
             ax.legend()
         except ImportError:
             logger.warning("statsmodels not installed. Skipping LOESS curve.")
@@ -136,6 +141,7 @@ def plot_prediction_error(
 
     # Calculate R²
     from sklearn.metrics import r2_score
+
     r2 = r2_score(y_true, y_pred)
 
     # Scatter plot
@@ -146,8 +152,15 @@ def plot_prediction_error(
     if show_identity:
         min_val = min(y_true.min(), y_pred.min())
         max_val = max(y_true.max(), y_pred.max())
-        ax.plot([min_val, max_val], [min_val, max_val], color="red",
-                linestyle="--", linewidth=2, alpha=0.7, label="Perfect Prediction")
+        ax.plot(
+            [min_val, max_val],
+            [min_val, max_val],
+            color="red",
+            linestyle="--",
+            linewidth=2,
+            alpha=0.7,
+            label="Perfect Prediction",
+        )
 
     ax.set_xlabel("Actual Values")
     ax.set_ylabel("Predicted Values")
@@ -204,6 +217,7 @@ def plot_residual_distribution(
     ax_hist = axes[0]
 
     import seaborn as sns
+
     sns.histplot(residuals, kde=True, color=color, ax=ax_hist, **kwargs)
 
     # Add normal distribution overlay
@@ -213,8 +227,9 @@ def plot_residual_distribution(
 
     # Scale to histogram
     ax_hist_twin = ax_hist.twinx()
-    ax_hist_twin.plot(x, y, color=colors[1], linewidth=2,
-                       label=f"Normal (μ={mu:.2f}, σ={std:.2f})")
+    ax_hist_twin.plot(
+        x, y, color=colors[1], linewidth=2, label=f"Normal (μ={mu:.2f}, σ={std:.2f})"
+    )
     ax_hist_twin.set_ylabel("")
     ax_hist_twin.set_yticks([])
 
@@ -224,9 +239,16 @@ def plot_residual_distribution(
 
     # Add statistics
     stats_text = f"Mean: {mu:.3f}\nStd: {std:.3f}\nSkew: {stats.skew(residuals):.3f}"
-    ax_hist.text(0.95, 0.95, stats_text, transform=ax_hist.transAxes,
-                 verticalalignment="top", horizontalalignment="right",
-                 fontsize=10, bbox=dict(boxstyle="round", facecolor="white", alpha=0.8))
+    ax_hist.text(
+        0.95,
+        0.95,
+        stats_text,
+        transform=ax_hist.transAxes,
+        verticalalignment="top",
+        horizontalalignment="right",
+        fontsize=10,
+        bbox={"boxstyle": "round", "facecolor": "white", "alpha": 0.8},
+    )
 
     # Q-Q plot
     if show_qq:
@@ -296,11 +318,17 @@ def plot_residuals_vs_feature(
     if show_loess:
         try:
             from statsmodels.nonparametric.smoothers_lowess import lowess
+
             # Sort for proper line plotting
             sorted_idx = np.argsort(feature)
             smoothed = lowess(residuals[sorted_idx], feature[sorted_idx], frac=0.3)
-            ax.plot(smoothed[:, 0], smoothed[:, 1], color=colors[1],
-                    linewidth=2, label="LOESS")
+            ax.plot(
+                smoothed[:, 0],
+                smoothed[:, 1],
+                color=colors[1],
+                linewidth=2,
+                label="LOESS",
+            )
             ax.legend()
         except ImportError:
             logger.warning("statsmodels not installed. Skipping LOESS curve.")

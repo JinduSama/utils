@@ -3,7 +3,8 @@
 This module provides visualization tools for learning and validation curves.
 """
 
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,9 +14,8 @@ from matplotlib.figure import Figure
 from sklearn.model_selection import learning_curve, validation_curve
 
 from ds_utils.config import get_colors
-from ds_utils.plotting.core import apply_corporate_style, create_figure
-
 from ds_utils.config.logging_config import get_logger
+from ds_utils.plotting.core import apply_corporate_style, create_figure
 
 logger = get_logger("ml_eval.learning_curves")
 
@@ -92,18 +92,40 @@ def plot_learning_curve(
     test_std = test_scores.std(axis=1)
 
     # Plot training scores
-    ax.plot(train_sizes_abs, train_mean, color=colors[0], marker="o",
-            linewidth=2, label="Training Score")
+    ax.plot(
+        train_sizes_abs,
+        train_mean,
+        color=colors[0],
+        marker="o",
+        linewidth=2,
+        label="Training Score",
+    )
     if show_std:
-        ax.fill_between(train_sizes_abs, train_mean - train_std, train_mean + train_std,
-                        color=colors[0], alpha=0.2)
+        ax.fill_between(
+            train_sizes_abs,
+            train_mean - train_std,
+            train_mean + train_std,
+            color=colors[0],
+            alpha=0.2,
+        )
 
     # Plot validation scores
-    ax.plot(train_sizes_abs, test_mean, color=colors[1], marker="o",
-            linewidth=2, label="Validation Score")
+    ax.plot(
+        train_sizes_abs,
+        test_mean,
+        color=colors[1],
+        marker="o",
+        linewidth=2,
+        label="Validation Score",
+    )
     if show_std:
-        ax.fill_between(train_sizes_abs, test_mean - test_std, test_mean + test_std,
-                        color=colors[1], alpha=0.2)
+        ax.fill_between(
+            train_sizes_abs,
+            test_mean - test_std,
+            test_mean + test_std,
+            color=colors[1],
+            alpha=0.2,
+        )
 
     ax.set_xlabel("Training Set Size")
     ax.set_ylabel("Score")
@@ -194,21 +216,55 @@ def plot_validation_curve(
 
     # Plot
     if log_scale:
-        ax.semilogx(param_range, train_mean, color=colors[0], marker="o",
-                    linewidth=2, label="Training Score")
-        ax.semilogx(param_range, test_mean, color=colors[1], marker="o",
-                    linewidth=2, label="Validation Score")
+        ax.semilogx(
+            param_range,
+            train_mean,
+            color=colors[0],
+            marker="o",
+            linewidth=2,
+            label="Training Score",
+        )
+        ax.semilogx(
+            param_range,
+            test_mean,
+            color=colors[1],
+            marker="o",
+            linewidth=2,
+            label="Validation Score",
+        )
     else:
-        ax.plot(param_range, train_mean, color=colors[0], marker="o",
-                linewidth=2, label="Training Score")
-        ax.plot(param_range, test_mean, color=colors[1], marker="o",
-                linewidth=2, label="Validation Score")
+        ax.plot(
+            param_range,
+            train_mean,
+            color=colors[0],
+            marker="o",
+            linewidth=2,
+            label="Training Score",
+        )
+        ax.plot(
+            param_range,
+            test_mean,
+            color=colors[1],
+            marker="o",
+            linewidth=2,
+            label="Validation Score",
+        )
 
     if show_std:
-        ax.fill_between(param_range, train_mean - train_std, train_mean + train_std,
-                        color=colors[0], alpha=0.2)
-        ax.fill_between(param_range, test_mean - test_std, test_mean + test_std,
-                        color=colors[1], alpha=0.2)
+        ax.fill_between(
+            param_range,
+            train_mean - train_std,
+            train_mean + train_std,
+            color=colors[0],
+            alpha=0.2,
+        )
+        ax.fill_between(
+            param_range,
+            test_mean - test_std,
+            test_mean + test_std,
+            color=colors[1],
+            alpha=0.2,
+        )
 
     if title is None:
         title = f"Validation Curve ({param_name})"
@@ -275,7 +331,9 @@ def plot_cv_results(
 
     param_values = cv_results[param_key]
     scores_mean = cv_results[scoring]
-    scores_std = cv_results.get(scoring.replace("mean_", "std_"), np.zeros_like(scores_mean))
+    scores_std = cv_results.get(
+        scoring.replace("mean_", "std_"), np.zeros_like(scores_mean)
+    )
 
     # Sort by parameter value
     sorted_idx = np.argsort(param_values)
@@ -285,21 +343,44 @@ def plot_cv_results(
 
     # Plot
     if log_scale:
-        ax.semilogx(param_values, scores_mean, color=colors[0], marker="o",
-                    linewidth=2, label=scoring)
+        ax.semilogx(
+            param_values,
+            scores_mean,
+            color=colors[0],
+            marker="o",
+            linewidth=2,
+            label=scoring,
+        )
     else:
-        ax.plot(param_values, scores_mean, color=colors[0], marker="o",
-                linewidth=2, label=scoring)
+        ax.plot(
+            param_values,
+            scores_mean,
+            color=colors[0],
+            marker="o",
+            linewidth=2,
+            label=scoring,
+        )
 
     if show_std:
-        ax.fill_between(param_values, scores_mean - scores_std, scores_mean + scores_std,
-                        color=colors[0], alpha=0.2)
+        ax.fill_between(
+            param_values,
+            scores_mean - scores_std,
+            scores_mean + scores_std,
+            color=colors[0],
+            alpha=0.2,
+        )
 
     # Mark best score
     best_idx = np.argmax(scores_mean)
-    ax.scatter([param_values[best_idx]], [scores_mean[best_idx]],
-               color=colors[1], s=200, marker="*", zorder=5,
-               label=f"Best: {scores_mean[best_idx]:.4f}")
+    ax.scatter(
+        [param_values[best_idx]],
+        [scores_mean[best_idx]],
+        color=colors[1],
+        s=200,
+        marker="*",
+        zorder=5,
+        label=f"Best: {scores_mean[best_idx]:.4f}",
+    )
 
     if title is None:
         title = f"Cross-Validation Results ({param_name})"
@@ -358,10 +439,17 @@ def plot_cv_comparison(
 
     # Extract data
     models = list(results.keys())
-    means = [results[m].get("mean", results[m]) if isinstance(results[m], dict)
-             else results[m] for m in models]
-    stds = [results[m].get("std", 0) if isinstance(results[m], dict)
-            else 0 for m in models]
+    means = [
+        (
+            results[m].get("mean", results[m])
+            if isinstance(results[m], dict)
+            else results[m]
+        )
+        for m in models
+    ]
+    stds = [
+        results[m].get("std", 0) if isinstance(results[m], dict) else 0 for m in models
+    ]
 
     # Sort by mean score
     sorted_idx = np.argsort(means)[::-1]
@@ -394,8 +482,12 @@ def plot_cv_comparison(
         plt.xticks(rotation=45, ha="right")
 
     ax.set_title(title)
-    ax.grid(True, linestyle="--", alpha=0.3,
-            axis="x" if orientation == "horizontal" else "y")
+    ax.grid(
+        True,
+        linestyle="--",
+        alpha=0.3,
+        axis="x" if orientation == "horizontal" else "y",
+    )
 
     plt.tight_layout()
     return fig, ax

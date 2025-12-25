@@ -2,7 +2,6 @@
 
 import matplotlib.pyplot as plt
 import pytest
-from pathlib import Path
 
 from ds_utils.plotting.core import (
     apply_corporate_style,
@@ -84,8 +83,6 @@ class TestPlotContext:
 
     def test_plot_context_restores_params(self):
         """Test that plot_context restores original parameters."""
-        original_font_size = plt.rcParams["font.size"]
-
         with plot_context():
             plt.rcParams["font.size"] = 999
 

@@ -15,9 +15,8 @@ from matplotlib.figure import Figure
 from scipy import stats
 
 from ds_utils.config import get_colors
-from ds_utils.plotting.core import apply_corporate_style, create_figure
-
 from ds_utils.config.logging_config import get_logger
+from ds_utils.plotting.core import apply_corporate_style, create_figure
 
 logger = get_logger("plotting.distributions")
 
@@ -104,27 +103,42 @@ def plot_histogram(
 
     # Add KDE
     if add_kde:
-        sns.kdeplot(values, ax=ax, color=colors[1] if len(colors) > 1 else "red",
-                    linewidth=2, label="KDE")
+        sns.kdeplot(
+            values,
+            ax=ax,
+            color=colors[1] if len(colors) > 1 else "red",
+            linewidth=2,
+            label="KDE",
+        )
 
     # Add normal distribution fit
     if add_normal:
         mu, std = values.mean(), values.std()
         x = np.linspace(values.min(), values.max(), 100)
         y = stats.norm.pdf(x, mu, std)
-        ax.plot(x, y, color=colors[2] if len(colors) > 2 else "green",
-                linewidth=2, linestyle="--", label=f"Normal (μ={mu:.2f}, σ={std:.2f})")
+        ax.plot(
+            x,
+            y,
+            color=colors[2] if len(colors) > 2 else "green",
+            linewidth=2,
+            linestyle="--",
+            label=f"Normal (μ={mu:.2f}, σ={std:.2f})",
+        )
 
     # Add statistics annotation
     if show_stats:
-        stats_text = f"n = {len(values)}\nmean = {values.mean():.2f}\nstd = {values.std():.2f}"
+        stats_text = (
+            f"n = {len(values)}\nmean = {values.mean():.2f}\nstd = {values.std():.2f}"
+        )
         ax.text(
-            0.95, 0.95, stats_text,
+            0.95,
+            0.95,
+            stats_text,
             transform=ax.transAxes,
             verticalalignment="top",
             horizontalalignment="right",
             fontsize=10,
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            bbox={"boxstyle": "round", "facecolor": "white", "alpha": 0.8},
         )
 
     # Apply labels
@@ -290,8 +304,12 @@ def plot_boxplot(
     if ylabel:
         ax.set_ylabel(ylabel)
 
-    ax.grid(True, linestyle="--", alpha=0.3,
-            axis="x" if orientation == "horizontal" else "y")
+    ax.grid(
+        True,
+        linestyle="--",
+        alpha=0.3,
+        axis="x" if orientation == "horizontal" else "y",
+    )
     plt.tight_layout()
 
     return fig, ax

@@ -14,9 +14,8 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from ds_utils.config import get_colors
-from ds_utils.plotting.core import apply_corporate_style, create_figure, format_number
-
 from ds_utils.config.logging_config import get_logger
+from ds_utils.plotting.core import apply_corporate_style, create_figure
 
 logger = get_logger("plotting.standard")
 
@@ -222,8 +221,14 @@ def plot_scatter(
         z = np.polyfit(data[x].dropna(), data[y].dropna(), 1)
         p = np.poly1d(z)
         x_line = np.linspace(data[x].min(), data[x].max(), 100)
-        ax.plot(x_line, p(x_line), color=colors[1] if len(colors) > 1 else "red",
-                linestyle="--", linewidth=2, label="Regression")
+        ax.plot(
+            x_line,
+            p(x_line),
+            color=colors[1] if len(colors) > 1 else "red",
+            linestyle="--",
+            linewidth=2,
+            label="Regression",
+        )
         ax.legend()
 
     # Apply labels
@@ -297,7 +302,9 @@ def plot_bar(
         if hue:
             sns.barplot(data=data, y=x, x=y, hue=hue, ax=ax, orient="h", **plot_kwargs)
         else:
-            sns.barplot(data=data, y=x, x=y, ax=ax, orient="h", color=colors[0], **plot_kwargs)
+            sns.barplot(
+                data=data, y=x, x=y, ax=ax, orient="h", color=colors[0], **plot_kwargs
+            )
     else:
         if hue:
             sns.barplot(data=data, x=x, y=y, hue=hue, ax=ax, **plot_kwargs)
@@ -320,7 +327,9 @@ def plot_bar(
         ax.set_xlabel(xlabel if xlabel else x)
         ax.set_ylabel(ylabel if ylabel else y)
 
-    ax.grid(True, linestyle="--", alpha=0.3, axis="y" if orientation == "vertical" else "x")
+    ax.grid(
+        True, linestyle="--", alpha=0.3, axis="y" if orientation == "vertical" else "x"
+    )
     plt.tight_layout()
 
     return fig, ax

@@ -5,7 +5,7 @@ and locale-specific cleaners for German data formats.
 """
 
 import re
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -25,7 +25,8 @@ def clean_german_numbers(
 ) -> pd.DataFrame | pd.Series:
     """Convert German-formatted numbers to standard floats.
 
-    German number format uses comma as decimal separator and period as thousands separator.
+    German number format uses comma as decimal separator and period as thousands
+    separator.
     Example: "1.234,56" -> 1234.56
 
     Args:
@@ -218,6 +219,7 @@ def detect_outliers(
         >>> s = pd.Series([1, 2, 3, 100, 4, 5])
         >>> s_outliers = detect_outliers(s)
     """
+
     def _get_outlier_mask(s: pd.Series) -> pd.Series:
         values = s.dropna()
         if values.empty:
@@ -242,7 +244,7 @@ def detect_outliers(
                 return pd.Series(False, index=s.index)
             modified_z = 0.6745 * (s - median) / mad
             return np.abs(modified_z) > threshold
-        
+
         return pd.Series(False, index=s.index)
 
     if isinstance(data, pd.Series):
@@ -282,7 +284,7 @@ def remove_outliers(
         DataFrame or Series with outlier rows removed.
     """
     outliers = detect_outliers(data, columns, method, threshold)
-    
+
     if isinstance(data, pd.Series):
         mask = ~outliers
         removed_count = (~mask).sum()
@@ -317,13 +319,15 @@ def missing_value_report(df: pd.DataFrame) -> pd.DataFrame:
     missing = df.isnull().sum()
     missing_pct = (missing / total) * 100
 
-    report = pd.DataFrame({
-        "column": df.columns,
-        "missing_count": missing.values,
-        "missing_percent": missing_pct.values,
-        "dtype": df.dtypes.values,
-        "non_null_count": total - missing.values,
-    })
+    report = pd.DataFrame(
+        {
+            "column": df.columns,
+            "missing_count": missing.values,
+            "missing_percent": missing_pct.values,
+            "dtype": df.dtypes.values,
+            "non_null_count": total - missing.values,
+        }
+    )
 
     report = report.sort_values("missing_percent", ascending=False)
     report = report.reset_index(drop=True)
@@ -353,7 +357,7 @@ def fill_missing_values(
         DataFrame with filled missing values.
     """
     df = df.copy()
-    
+
     # Use strategies if provided
     if strategies is not None:
         strategy = strategies
@@ -362,12 +366,12 @@ def fill_missing_values(
         for col, strat in strategy.items():
             if col not in df.columns:
                 continue
-            
+
             # Get specific fill value for this column if available
             col_fill_value = fill_value
             if fill_values and col in fill_values:
                 col_fill_value = fill_values[col]
-            
+
             df[col] = _fill_column(df[col], strat, col_fill_value)
     else:
         for col in df.columns:
@@ -470,14 +474,17 @@ def normalize_text(
     Args:
         data: DataFrame or Series to clean.
         columns: Column name(s) to normalize (only if data is a DataFrame).
-        case: Target case ('lower', 'upper', 'title', 'snake'). If provided, overrides lowercase.
+        case: Target case ('lower', 'upper', 'title', 'snake'). If provided, overrides
+            lowercase.
         lowercase: Whether to convert to lowercase (default: True).
         strip: Whether to strip leading/trailing whitespace (default: True).
-        remove_extra_spaces: Whether to replace multiple spaces with single space (default: True).
+        remove_extra_spaces: Whether to replace multiple spaces with single space
+            (default: True).
 
     Returns:
         DataFrame or Series with normalized text.
     """
+
     def _normalize_series(s: pd.Series) -> pd.Series:
         if s.dtype != "object" and not pd.api.types.is_string_dtype(s):
             return s
@@ -490,7 +497,11 @@ def normalize_text(
         elif case == "title":
             s = s.str.title()
         elif case == "snake":
-            s = s.str.replace(r"([a-z])([A-Z])", r"\1_\2", regex=True).str.lower().str.replace(r"\s+", "_", regex=True)
+            s = (
+                s.str.replace(r"([a-z])([A-Z])", r"\1_\2", regex=True)
+                .str.lower()
+                .str.replace(r"\s+", "_", regex=True)
+            )
         elif lowercase:
             s = s.str.lower()
 
@@ -498,7 +509,7 @@ def normalize_text(
             s = s.str.strip()
         if remove_extra_spaces:
             s = s.str.replace(r"\s+", " ", regex=True)
-        
+
         return s
 
     if isinstance(data, pd.Series):

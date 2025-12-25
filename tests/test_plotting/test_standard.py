@@ -1,7 +1,6 @@
 """Tests for standard plotting functions."""
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -28,9 +27,7 @@ class TestPlotLine:
 
     def test_line_plot_with_title(self, sample_dataframe):
         """Test line plot with custom title."""
-        fig, ax = plot_line(
-            sample_dataframe, x="date", y="numeric", title="Test Title"
-        )
+        fig, ax = plot_line(sample_dataframe, x="date", y="numeric", title="Test Title")
 
         assert ax.get_title() == "Test Title"
 
@@ -83,10 +80,12 @@ class TestPlotBar:
 
     def test_basic_bar_plot(self):
         """Test creating a basic bar plot."""
-        data = pd.DataFrame({
-            "category": ["A", "B", "C"],
-            "value": [10, 20, 15],
-        })
+        data = pd.DataFrame(
+            {
+                "category": ["A", "B", "C"],
+                "value": [10, 20, 15],
+            }
+        )
 
         fig, ax = plot_bar(data, x="category", y="value")
 
@@ -96,10 +95,12 @@ class TestPlotBar:
 
     def test_horizontal_bar_plot(self):
         """Test horizontal bar plot."""
-        data = pd.DataFrame({
-            "category": ["A", "B", "C"],
-            "value": [10, 20, 15],
-        })
+        data = pd.DataFrame(
+            {
+                "category": ["A", "B", "C"],
+                "value": [10, 20, 15],
+            }
+        )
 
         fig, ax = plot_bar(data, x="category", y="value", orientation="horizontal")
 
@@ -107,10 +108,12 @@ class TestPlotBar:
 
     def test_bar_plot_with_values(self):
         """Test bar plot with value labels."""
-        data = pd.DataFrame({
-            "category": ["A", "B"],
-            "value": [10, 20],
-        })
+        data = pd.DataFrame(
+            {
+                "category": ["A", "B"],
+                "value": [10, 20],
+            }
+        )
 
         fig, ax = plot_bar(data, x="category", y="value", show_values=True)
 

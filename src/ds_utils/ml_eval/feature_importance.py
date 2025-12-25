@@ -12,9 +12,8 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from ds_utils.config import get_colors
-from ds_utils.plotting.core import apply_corporate_style, create_figure
-
 from ds_utils.config.logging_config import get_logger
+from ds_utils.plotting.core import apply_corporate_style, create_figure
 
 logger = get_logger("ml_eval.feature_importance")
 
@@ -76,22 +75,28 @@ def plot_feature_importance(
 
     # Convert to DataFrame for easier manipulation
     if isinstance(importances, dict):
-        df = pd.DataFrame({
-            "feature": list(importances.keys()),
-            "importance": list(importances.values()),
-        })
+        df = pd.DataFrame(
+            {
+                "feature": list(importances.keys()),
+                "importance": list(importances.values()),
+            }
+        )
     elif isinstance(importances, pd.Series):
-        df = pd.DataFrame({
-            "feature": importances.index,
-            "importance": importances.values,
-        })
+        df = pd.DataFrame(
+            {
+                "feature": importances.index,
+                "importance": importances.values,
+            }
+        )
     else:
         if feature_names is None:
             feature_names = [f"Feature {i}" for i in range(len(importances))]
-        df = pd.DataFrame({
-            "feature": feature_names,
-            "importance": importances,
-        })
+        df = pd.DataFrame(
+            {
+                "feature": feature_names,
+                "importance": importances,
+            }
+        )
 
     # Sort by importance
     if sort:
@@ -112,9 +117,14 @@ def plot_feature_importance(
         ax.set_ylabel("Feature")
 
         if show_values:
-            for bar, val in zip(bars, df["importance"]):
-                ax.text(bar.get_width() + 0.01, bar.get_y() + bar.get_height() / 2,
-                        f"{val:{value_format}}", va="center", fontsize=9)
+            for bar, val in zip(bars, df["importance"], strict=True):
+                ax.text(
+                    bar.get_width() + 0.01,
+                    bar.get_y() + bar.get_height() / 2,
+                    f"{val:{value_format}}",
+                    va="center",
+                    fontsize=9,
+                )
     else:
         bars = ax.bar(df["feature"], df["importance"], color=color, **kwargs)
         ax.set_ylabel(xlabel)
@@ -122,13 +132,22 @@ def plot_feature_importance(
         plt.xticks(rotation=45, ha="right")
 
         if show_values:
-            for bar, val in zip(bars, df["importance"]):
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01,
-                        f"{val:{value_format}}", ha="center", fontsize=9)
+            for bar, val in zip(bars, df["importance"], strict=True):
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.01,
+                    f"{val:{value_format}}",
+                    ha="center",
+                    fontsize=9,
+                )
 
     ax.set_title(title)
-    ax.grid(True, linestyle="--", alpha=0.3,
-            axis="x" if orientation == "horizontal" else "y")
+    ax.grid(
+        True,
+        linestyle="--",
+        alpha=0.3,
+        axis="x" if orientation == "horizontal" else "y",
+    )
 
     plt.tight_layout()
     return fig, ax
@@ -178,11 +197,13 @@ def plot_permutation_importance(
         color = colors[0]
 
     # Create DataFrame
-    df = pd.DataFrame({
-        "feature": feature_names,
-        "importance": result.importances_mean,
-        "std": result.importances_std,
-    })
+    df = pd.DataFrame(
+        {
+            "feature": feature_names,
+            "importance": result.importances_mean,
+            "std": result.importances_std,
+        }
+    )
 
     # Sort and limit
     df = df.sort_values("importance", ascending=False)
@@ -194,8 +215,14 @@ def plot_permutation_importance(
 
     # Plot with error bars
     if show_std:
-        ax.barh(df["feature"], df["importance"], xerr=df["std"],
-                color=color, capsize=3, **kwargs)
+        ax.barh(
+            df["feature"],
+            df["importance"],
+            xerr=df["std"],
+            color=color,
+            capsize=3,
+            **kwargs,
+        )
     else:
         ax.barh(df["feature"], df["importance"], color=color, **kwargs)
 
@@ -243,8 +270,10 @@ def plot_shap_summary(
     """
     try:
         import shap
-    except ImportError:
-        raise ImportError("shap package is required for SHAP plots. Install with: pip install shap")
+    except ImportError as e:
+        raise ImportError(
+            "shap package is required for SHAP plots. Install with: pip install shap"
+        ) from e
 
     apply_corporate_style()
 
@@ -337,16 +366,20 @@ def plot_feature_importance_comparison(
     data = []
     for method, importances in importance_dict.items():
         for feature in all_features:
-            data.append({
-                "Method": method,
-                "Feature": feature,
-                "Importance": importances.get(feature, 0),
-            })
+            data.append(
+                {
+                    "Method": method,
+                    "Feature": feature,
+                    "Importance": importances.get(feature, 0),
+                }
+            )
 
     df = pd.DataFrame(data)
 
     # Get top features by mean importance
-    mean_importance = df.groupby("Feature")["Importance"].mean().sort_values(ascending=False)
+    mean_importance = (
+        df.groupby("Feature")["Importance"].mean().sort_values(ascending=False)
+    )
     if top_n is not None:
         top_features = mean_importance.head(top_n).index.tolist()
         df = df[df["Feature"].isin(top_features)]
@@ -356,7 +389,7 @@ def plot_feature_importance_comparison(
     pivot_df = pivot_df.reindex(mean_importance.head(top_n).index[::-1])
 
     # Plot
-    pivot_df.plot(kind="barh", ax=ax, color=colors[:len(importance_dict)], **kwargs)
+    pivot_df.plot(kind="barh", ax=ax, color=colors[: len(importance_dict)], **kwargs)
 
     ax.set_xlabel("Importance")
     ax.set_ylabel("Feature")

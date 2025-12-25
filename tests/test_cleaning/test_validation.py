@@ -10,7 +10,6 @@ from ds_utils.cleaning.validation import (
     data_quality_report,
 )
 
-
 # Skip tests if pandera is not installed
 pytest.importorskip("pandera")
 
@@ -20,10 +19,12 @@ class TestCreateSchema:
 
     def test_simple_schema(self):
         """Test creating a simple schema."""
-        schema = create_schema({
-            "age": "int",
-            "name": "str",
-        })
+        schema = create_schema(
+            {
+                "age": "int",
+                "name": "str",
+            }
+        )
 
         assert schema is not None
         assert "age" in schema.columns
@@ -31,10 +32,12 @@ class TestCreateSchema:
 
     def test_schema_validation_pass(self):
         """Test that valid data passes schema validation."""
-        schema = create_schema({
-            "age": "int",
-            "name": "str",
-        })
+        schema = create_schema(
+            {
+                "age": "int",
+                "name": "str",
+            }
+        )
 
         df = pd.DataFrame({"age": [25, 30], "name": ["Alice", "Bob"]})
         result = schema.validate(df)
@@ -80,9 +83,7 @@ class TestCreateStringSchema:
 
     def test_allowed_values_validation(self):
         """Test allowed values validation."""
-        schema = create_string_schema(
-            "status", allowed_values=["active", "inactive"]
-        )
+        schema = create_string_schema("status", allowed_values=["active", "inactive"])
 
         df_valid = pd.DataFrame({"status": ["active", "inactive"]})
         result = schema.validate(df_valid)
