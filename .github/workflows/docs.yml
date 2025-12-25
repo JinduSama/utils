@@ -38,7 +38,7 @@ jobs:
 
       - name: Build documentation
         run: |
-          uv run --frozen mkdocs build --config-file mkdocs.yml
+          uv run mkdocs build --config-file mkdocs.yml
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
